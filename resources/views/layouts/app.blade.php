@@ -64,26 +64,17 @@
         }
 
         /* ============================================================ */
-        /* TYPEWRITER - Efek mesin tik */
+        /* TYPEWRITER — Cursor berkedip untuk efek mesin tik */
         /* ============================================================ */
-        .typewriter {
-            overflow: hidden;
-            border-right: 2px solid #06b6d4;
-            white-space: pre-wrap;
-            animation:
-                typing 3s steps(120, end),
-                blink 0.7s step-end infinite;
-            max-width: 100%;
-        }
-
-        @keyframes typing {
-            from { max-height: 0; opacity: 0; }
-            to   { max-height: 500px; opacity: 1; }
-        }
-
         @keyframes blink {
-            0%, 100% { border-color: transparent; }
-            50%      { border-color: #06b6d4; }
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0; }
+        }
+
+        /* Fade-in cadangan (kalau dibutuhkan) */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         /* ============================================================ */

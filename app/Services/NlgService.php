@@ -7,104 +7,60 @@ use Illuminate\Support\Facades\Log;
 
 class NlgService
 {
-    /**
-     * Google Gemini API Key
-     */
     protected string $apiKey;
-
-    /**
-     * Base URL Gemini API (gemini-1.5-flash)
-     */
-    protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
-
-    /**
-     * Timeout request (detik)
-     */
+    protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
     protected int $timeout = 60;
 
     public function __construct()
     {
-        $this->apiKey = config('services.gemini.api_key') ?? env('GEMINI_API_KEY');
+        $this->apiKey = env('GEMINI_API_KEY');
     }
 
-    /**
-     * ============================================================
-     * Generate narasi edukasi finansial berdasarkan profil risiko
-     * dan data pasar terkini.
-     *
-     * @param string $profilRisiko  'Konservatif' | 'Moderat' | 'Agresif'
-     * @param array  $marketData    ['bitcoin' => [...], 'stock' => [...], 'gold' => [...]]
-     * @return string               Narasi edukasi (2 paragraf)
-     * ============================================================
-     */
     public function generateNarasiEdukasi(string $profilRisiko, array $marketData): string
     {
-        // ---------------------------------------------------------
-        // 1. Ekstrak data penting dari $marketData
-        // ---------------------------------------------------------
         $btcPrice  = $marketData['bitcoin']['price_usd'] ?? null;
         $btcChange = $marketData['bitcoin']['change_24h'] ?? 0;
-
         $ihsgPrice  = $marketData['stock']['price'] ?? null;
         $ihsgChange = $marketData['stock']['change_percent'] ?? 0;
-
         $goldPrice  = $marketData['gold']['price_usd'] ?? null;
 
-        // Format angka agar mudah dibaca
         $btcPriceFormatted  = $btcPrice  ? '$ ' . number_format($btcPrice, 2, '.', ',') : 'tidak tersedia';
         $ihsgPriceFormatted = $ihsgPrice ? 'Rp ' . number_format($ihsgPrice, 0, ',', '.') : 'tidak tersedia';
         $goldPriceFormatted = $goldPrice ? '$ ' . number_format($goldPrice, 2, '.', ',') . ' / troy ounce' : 'tidak tersedia';
 
-        // ---------------------------------------------------------
-        // 2. Susun System Prompt (gaya Gen Z, ahli, ringkas)
-        // ---------------------------------------------------------
         $systemInstruction = <<<PROMPT
-Kamu adalah "FinGo", penasihat keuangan digital yang ahli dan berpengalaman,
-tapi gaya bahasamu santai, modern, dan asyik — cocok untuk Gen Z (mahasiswa).
-Gunakan bahasa Indonesia gaul yang sopan (boleh pakai "kamu", "nih", "sih", "gitu", "banget"),
-hindari bahasa formal kaku seperti "Anda" atau "demikian".
+Kamu adalah "FinGo", penasihat keuangan digital untuk mahasiswa Indonesia. Gaya bahasamu santai, akrab, dan mengajar — seperti kakak tingkat yang paham finansial.
 
-Tugasmu: berikan narasi edukasi finansial MAKSIMAL 2 PARAGRAF PENDEK (total 80-120 kata).
+TUGASMU: Berikan narasi edukasi finansial MAKSIMAL 2 PARAGRAF dengan total 150-200 kata tentang kondisi pasar hari ini dan strategi DCA (Dollar Cost Averaging, yaitu strategi beli aset secara rutin di harga tetap) yang cocok untuk profil risiko mahasiswa.
 
-Paragraf 1: Analisis singkat kondisi pasar dari 3 aset (Bitcoin, IHSG, Emas)
-           berdasarkan data harga yang diberikan. Sebutkan arah pergerakan
-           (naik/turun) secara natural, jangan sekadar membaca angka.
-
-Paragraf 2: Berikan rekomendasi strategi DCA (Dollar Cost Averaging) yang
-           DISESUAIKAN dengan profil risiko user. Jelaskan kenapa strategi
-           itu cocok, dan sebutkan porsi alokasi ideal secara umum
-           (contoh: 50% ke aset stabil, 30% ke saham, 20% ke kripto).
-
-Aturan penting:
-- JANGAN gunakan bullet point atau numbering. Tulis dalam paragraf mengalir.
-- JANGAN gunakan emoji berlebihan (maksimal 1-2 emoji saja).
-- JANGAN mengulang angka mentah; interpretasikan.
-- Akhiri dengan satu kalimat penyemangat singkat.
+ATURAN KETAT:
+1. WAJIB 100% bahasa Indonesia. JANGAN pakai istilah Inggris seperti 'bleeding', 'bullish', 'bearish', 'FOMO', 'moon', 'dump', 'pump', 'hodl', 'guys'. Kalau perlu istilah teknis seperti DCA, langsung jelaskan artinya dalam bahasa Indonesia.
+2. Paragraf 1: Jelaskan kondisi pasar 3 aset (Bitcoin, IHSG, Emas) hari ini secara mengalir. Sebut arah pergerakan (naik/turun) secara natural, dan jelaskan implikasinya untuk investor.
+3. Paragraf 2: Berikan saran strategi DCA konkret yang disesuaikan dengan profil risiko user. Kalau pasar turun, edukasi bahwa ini kesempatan akumulasi (beli murah). Kalau pasar naik, ingatkan jangan terbawa emosi dan tetap disiplin jadwal DCA. Sebutkan alokasi ideal secara umum: Konservatif lebih banyak ke aset stabil (emas, deposito), sedikit ke kripto dan saham. Moderat seimbang antara aset stabil dan aset berisiko. Agresif lebih besar ke kripto dan saham, tetapi tetap ada porsi aset stabil.
+4. Bahasa santai, pakai 'kamu', 'nih', 'sih', 'gitu', 'banget'. Hindari bahasa formal seperti 'Anda' atau 'demikian'.
+5. Tulis dalam paragraf mengalir. JANGAN pakai bullet, numbering, atau tanda bintang.
+6. Akhiri dengan satu kalimat penyemangat singkat.
+7. JANGAN pakai emoji.
 PROMPT;
 
-        // ---------------------------------------------------------
-        // 3. Susun User Prompt (data yang diberikan ke Gemini)
-        // ---------------------------------------------------------
         $userPrompt = <<<PROMPT
 Profil risiko saya: {$profilRisiko}
 
 Data pasar saat ini:
-- Bitcoin (BTC): {$btcPriceFormatted} (perubahan 24 jam: {$btcChange}%)
-- IHSG (^JKSE): {$ihsgPriceFormatted} (perubahan: {$ihsgChange}%)
-- Emas (XAU/USD): {$goldPriceFormatted}
+Bitcoin: {$btcPriceFormatted} (perubahan 24 jam: {$btcChange}%)
+IHSG: {$ihsgPriceFormatted} (perubahan: {$ihsgChange}%)
+Emas: {$goldPriceFormatted}
 
-Tolong berikan analisis dan rekomendasi strategi DCA yang cocok untuk saya.
+Tolong berikan analisis dan saran strategi DCA yang cocok untuk profil saya. Ingat: 100% bahasa Indonesia, maksimal 2 paragraf, fokus edukasi tentang cara menyikapi pasar turun versus naik.
 PROMPT;
 
-        // ---------------------------------------------------------
-        // 4. Kirim Request ke Gemini API
-        // ---------------------------------------------------------
         try {
             $response = Http::timeout($this->timeout)
                 ->withHeaders([
-                    'Content-Type' => 'application/json',
+                    'x-goog-api-key' => $this->apiKey,
+                    'Content-Type'   => 'application/json',
                 ])
-                ->post("{$this->baseUrl}?key={$this->apiKey}", [
+                ->post($this->baseUrl, [
                     'system_instruction' => [
                         'parts' => [
                             ['text' => $systemInstruction],
@@ -119,21 +75,18 @@ PROMPT;
                         ],
                     ],
                     'generationConfig' => [
-                        'temperature'     => 0.8,
-                        'maxOutputTokens' => 300,
+                        'temperature'     => 0.75,
                         'topP'            => 0.95,
+                        'maxOutputTokens' => 500,
                     ],
                 ]);
 
-            // ---------------------------------------------------------
-            // 5. Handle Response
-            // ---------------------------------------------------------
             if ($response->successful()) {
                 $data = $response->json();
-
                 $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
                 if ($text) {
+                    Log::info('NlgService: Narasi Gemini BERHASIL di-generate');
                     return trim($text);
                 }
 
@@ -145,7 +98,6 @@ PROMPT;
                 'status' => $response->status(),
                 'body'   => $response->body(),
             ]);
-
             return $this->fallbackNarasi($profilRisiko);
 
         } catch (\Exception $e) {
@@ -154,16 +106,11 @@ PROMPT;
         }
     }
 
-    /**
-     * ============================================================
-     * Fallback narasi jika Gemini API gagal
-     * ============================================================
-     */
     protected function fallbackNarasi(string $profilRisiko): string
     {
         return "Pasar lagi dinamis nih! Harga Bitcoin, IHSG, dan Emas bergerak variatif. "
-             . "Untuk kamu yang profilnya {$profilRisiko}, strategi DCA tetap paling aman — "
-             . "cukup sisihkan dana rutin tiap bulan, jangan panic selling, dan fokus jangka panjang. "
-             . "Ingat, konsistensi itu kunci! 💪";
+             . "Untuk kamu yang profilnya {$profilRisiko}, strategi DCA tetap paling aman "
+             . "— cukup sisihkan dana rutin tiap bulan, jangan panik, dan fokus jangka panjang. "
+             . "Ingat, konsistensi itu kunci!";
     }
 }

@@ -56,14 +56,13 @@
             </div>
 
             {{-- ============================================================ --}}
-            {{-- KARTU AI FINANCIAL ADVISOR (Typewriter Effect) --}}
+            {{-- KARTU AI FINANCIAL ADVISOR --}}
             {{-- ============================================================ --}}
             <div class="fade-in-up fade-in-up-delay-1 relative overflow-hidden rounded-2xl p-6
                         bg-gradient-to-br from-cyan-950/60 via-slate-900/80 to-purple-950/40
                         backdrop-blur-2xl border border-cyan-500/30 shimmer-border
                         shadow-[0_0_50px_rgba(6,182,212,0.2)]">
 
-                {{-- Glow orb decorative --}}
                 <div class="absolute -top-32 -right-32 w-80 h-80 bg-cyan-500/25 rounded-full blur-3xl float-anim"></div>
                 <div class="absolute -bottom-32 -left-32 w-80 h-80 bg-purple-500/25 rounded-full blur-3xl float-anim"></div>
 
@@ -93,10 +92,10 @@
                         </div>
                     </div>
 
-                    {{-- Narasi AI dengan Typewriter --}}
+                    {{-- Narasi AI dengan Typewriter (Optimized: Kata per Kata) --}}
                     <div class="prose prose-invert max-w-none">
                         <p id="narasi-text"
-                           class="text-gray-100 leading-relaxed whitespace-pre-line text-sm md:text-[15px]">
+                           class="text-gray-100 leading-relaxed whitespace-pre-line text-sm md:text-[15px] fade-in-up">
                             {{ $narasi }}
                         </p>
                     </div>
@@ -409,40 +408,16 @@
 
     <script>
         // =========================================================
-        // TYPEWRITER EFFECT untuk narasi AI
+        // FADE-IN NARASI AI
         // =========================================================
         document.addEventListener('DOMContentLoaded', () => {
             const narasiEl = document.getElementById('narasi-text');
-            if (narasiEl) {
-                const fullText = narasiEl.textContent.trim();
-                narasiEl.textContent = '';
-                narasiEl.style.minHeight = '60px';
-
-                // Cursor berkedip
-                const cursor = document.createElement('span');
-                cursor.textContent = '▋';
-                cursor.style.cssText = 'display:inline-block;color:#06b6d4;animation:blink 0.7s step-end infinite;font-weight:bold;';
-
-                let i = 0;
-                const speed = 12; // ms per karakter
-
-                function type() {
-                    if (i < fullText.length) {
-                        narasiEl.textContent = fullText.substring(0, i + 1);
-                        narasiEl.appendChild(cursor);
-                        i++;
-                        setTimeout(type, speed);
-                    } else {
-                        // Hapus cursor setelah selesai
-                        setTimeout(() => {
-                            if (cursor.parentNode) cursor.parentNode.removeChild(cursor);
-                        }, 2000);
-                    }
-                }
-
-                // Mulai setelah 500ms
-                setTimeout(type, 500);
-            }
+            if (!narasiEl) return;
+            narasiEl.style.opacity = '0';
+            narasiEl.style.transition = 'opacity 0.8s ease';
+            setTimeout(() => {
+                narasiEl.style.opacity = '1';
+            }, 200);
         });
 
         // =========================================================

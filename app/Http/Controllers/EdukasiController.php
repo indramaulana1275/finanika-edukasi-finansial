@@ -8,13 +8,14 @@ use App\Services\MarketDataService;
 use App\Services\NlgService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class EdukasiController extends Controller
 {
     /**
      * ============================================================
      * Halaman Dasbor Edukasi Finansial (user login)
-     * Futuristik + Glassmorphism + NLG + Multi-Chart
+     * ⚡ FASE C: Optimasi Concurrent Request
      * ============================================================
      */
     public function dashboard(MarketDataService $market, NlgService $nlg)
@@ -41,21 +42,32 @@ class EdukasiController extends Controller
         $profilRisiko = $riskProfile->tipe_risiko ?? 'Moderat';
 
         // ----------------------------------------------------------
-        // 3. Harga terkini 3 aset (Bitcoin, IHSG, Emas)
+        // 3. ⚡ DATA MARKET — CONCURRENT FETCH (SEKALI JALAN)
+        //    Semua API di-request paralel, bukan satu per satu
         // ----------------------------------------------------------
+        $startTime = microtime(true);
+
+        // Ambil SEMUA harga saat ini (paralel)
         $marketPrices = $market->getAllCurrentPrices();
 
-        // ----------------------------------------------------------
-        // 4. Histori 7 hari untuk KETIGA aset
-        // ----------------------------------------------------------
-        $btcHistory   = $market->getBitcoinHistoricalPrices(7);
-        $stockHistory = $market->getStockHistoricalPrices('^JKSE', 7);
-        $goldHistory  = $market->getGoldHistoricalPrices(7);
+        // Ambil SEMUA histori 7 hari (paralel)
+        $allHistory = $market->getAllHistoricalPrices(7);
+
+        // Ekstrak historis per aset
+        $btcHistory   = $allHistory['bitcoin'] ?? ['success' => false, 'prices' => []];
+        $stockHistory = $allHistory['stock']   ?? ['success' => false, 'prices' => []];
+        $goldHistory  = $allHistory['gold']    ?? ['success' => false, 'prices' => []];
 
         // ----------------------------------------------------------
-        // 5. Narasi edukasi dari Gemini (NLG)
+        // 4. Narasi edukasi dari Gemini (NLG)
         // ----------------------------------------------------------
         $narasi = $nlg->generateNarasiEdukasi($profilRisiko, $marketPrices);
+
+        // ----------------------------------------------------------
+        // 5. Log untuk analisis TA (Bab 4)
+        // ----------------------------------------------------------
+        $loadTime = round((microtime(true) - $startTime) * 1000);
+        Log::info("Dashboard loaded in {$loadTime}ms (concurrent fetch)");
 
         return view('dashboard', compact(
             'user',
@@ -184,15 +196,25 @@ class EdukasiController extends Controller
     /**
      * ============================================================
      * Halaman Pasar / Market Data
+     * ⚡ FASE C: Concurrent Fetch
      * ============================================================
      */
     public function marketData(MarketDataService $market)
     {
+        $startTime = microtime(true);
+
+        // Ambil semua harga saat ini (paralel)
         $currentPrices = $market->getAllCurrentPrices();
 
-        $btcHistory   = $market->getBitcoinHistoricalPrices(7);
-        $stockHistory = $market->getStockHistoricalPrices('^JKSE', 7);
-        $goldHistory  = $market->getGoldHistoricalPrices(7);
+        // Ambil semua histori (paralel)
+        $allHistory = $market->getAllHistoricalPrices(7);
+
+        $btcHistory   = $allHistory['bitcoin'] ?? ['success' => false, 'prices' => []];
+        $stockHistory = $allHistory['stock']   ?? ['success' => false, 'prices' => []];
+        $goldHistory  = $allHistory['gold']    ?? ['success' => false, 'prices' => []];
+
+        $loadTime = round((microtime(true) - $startTime) * 1000);
+        Log::info("Market page loaded in {$loadTime}ms (concurrent fetch)");
 
         return view('edukasi.market', compact(
             'currentPrices',
@@ -205,6 +227,7 @@ class EdukasiController extends Controller
     /**
      * ============================================================
      * API Endpoint: Harga saat ini (JSON)
+     * ⚡ FASE C: Concurrent Fetch
      * ============================================================
      */
     public function apiCurrentPrices(MarketDataService $market)
@@ -215,6 +238,7 @@ class EdukasiController extends Controller
     /**
      * ============================================================
      * API Endpoint: Historis berdasarkan parameter
+     * ⚡ FASE C: Concurrent Fetch
      * ============================================================
      */
     public function apiHistoricalPrices(Request $request, MarketDataService $market)
@@ -222,10 +246,13 @@ class EdukasiController extends Controller
         $asset = $request->query('asset', 'btc');
         $days  = (int) $request->query('days', 7);
 
+        // Ambil semua history sekali (paralel), lalu pilih yang dibutuhkan
+        $allHistory = $market->getAllHistoricalPrices($days);
+
         $data = match ($asset) {
-            'btc'   => $market->getBitcoinHistoricalPrices($days),
-            'stock' => $market->getStockHistoricalPrices('^JKSE', $days),
-            'gold'  => $market->getGoldHistoricalPrices($days),
+            'btc'   => $allHistory['bitcoin'] ?? ['success' => false, 'error' => 'Data BTC tidak tersedia'],
+            'stock' => $allHistory['stock']   ?? ['success' => false, 'error' => 'Data IHSG tidak tersedia'],
+            'gold'  => $allHistory['gold']    ?? ['success' => false, 'error' => 'Data Emas tidak tersedia'],
             default => ['success' => false, 'error' => 'Aset tidak dikenal'],
         };
 
