@@ -1,79 +1,155 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl text-white leading-tight">
                 {{ __('Market Data - Harga Pasar Terkini') }}
             </h2>
-            <span class="text-xs text-gray-500 dark:text-gray-400">
+            <span class="text-xs text-gray-400">
                 Update otomatis tiap 5 menit
             </span>
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="relative min-h-screen py-8 overflow-hidden">
+        <div class="relative max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             {{-- ============================================================ --}}
             {{-- Kartu Harga Saat Ini --}}
             {{-- ============================================================ --}}
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-4">
+            <div class="rounded-2xl p-6 bg-white/[0.03] backdrop-blur-xl border border-white/10">
+                <h3 class="text-md font-semibold text-white mb-4">
                     💰 Harga Saat Ini
                 </h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
 
                     {{-- Bitcoin --}}
-                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
+                    <div class="bg-gradient-to-br from-orange-500/10 to-orange-500/20 p-4 rounded-lg border border-orange-500/20">
                         <div class="flex items-center justify-between mb-2">
-                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400">Bitcoin (BTC)</p>
-                            <span class="text-xs px-2 py-0.5 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded">Crypto</span>
+                            <p class="text-xs font-medium text-gray-400">Bitcoin (BTC)</p>
+                            <span class="text-xs px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded">Crypto</span>
                         </div>
                         @if($currentPrices['bitcoin']['success'] ?? false)
-                            <p class="text-2xl font-bold text-orange-700 dark:text-orange-300">
+                            <p class="text-2xl font-bold text-orange-400">
                                 $ {{ number_format($currentPrices['bitcoin']['price_usd'], 2, '.', ',') }}
                             </p>
                             @php $btcChange = $currentPrices['bitcoin']['change_24h'] ?? 0; @endphp
-                            <p class="text-xs mt-1 {{ $btcChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                            <p class="text-xs mt-1 {{ $btcChange >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
                                 {{ $btcChange >= 0 ? '▲' : '▼' }} {{ number_format(abs($btcChange), 2) }}% (24 jam)
                             </p>
                         @else
-                            <p class="text-sm text-red-500">Data tidak tersedia</p>
+                            <p class="text-sm text-red-400">Data tidak tersedia</p>
                         @endif
                     </div>
 
-                    {{-- Saham BBCA --}}
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                    {{-- Ethereum --}}
+                    <div class="bg-gradient-to-br from-violet-500/10 to-violet-500/20 p-4 rounded-lg border border-violet-500/20">
                         <div class="flex items-center justify-between mb-2">
-                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400">Saham BBCA</p>
-                            <span class="text-xs px-2 py-0.5 bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded">Stock</span>
+                            <p class="text-xs font-medium text-gray-400">Ethereum (ETH)</p>
+                            <span class="text-xs px-2 py-0.5 bg-violet-500/20 text-violet-400 rounded">Crypto</span>
+                        </div>
+                        @if($currentPrices['ethereum']['success'] ?? false)
+                            <p class="text-2xl font-bold text-violet-400">
+                                $ {{ number_format($currentPrices['ethereum']['price_usd'], 2, '.', ',') }}
+                            </p>
+                            @php $ethChange = $currentPrices['ethereum']['change_24h'] ?? 0; @endphp
+                            <p class="text-xs mt-1 {{ $ethChange >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                                {{ $ethChange >= 0 ? '+' : '' }}{{ number_format(abs($ethChange), 2) }}% (24 jam)
+                            </p>
+                        @else
+                            <p class="text-sm text-red-400">Data tidak tersedia</p>
+                        @endif
+                    </div>
+
+                    {{-- Solana --}}
+                    <div class="bg-gradient-to-br from-pink-500/10 to-pink-500/20 p-4 rounded-lg border border-pink-500/20">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-xs font-medium text-gray-400">Solana (SOL)</p>
+                            <span class="text-xs px-2 py-0.5 bg-pink-500/20 text-pink-400 rounded">Crypto</span>
+                        </div>
+                        @if($currentPrices['solana']['success'] ?? false)
+                            <p class="text-2xl font-bold text-pink-400">
+                                $ {{ number_format($currentPrices['solana']['price_usd'], 2, '.', ',') }}
+                            </p>
+                            @php $solChange = $currentPrices['solana']['change_24h'] ?? 0; @endphp
+                            <p class="text-xs mt-1 {{ $solChange >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                                {{ $solChange >= 0 ? '+' : '' }}{{ number_format(abs($solChange), 2) }}% (24 jam)
+                            </p>
+                        @else
+                            <p class="text-sm text-red-400">Data tidak tersedia</p>
+                        @endif
+                    </div>
+
+                    {{-- BNB --}}
+                    <div class="bg-gradient-to-br from-amber-500/10 to-amber-500/20 p-4 rounded-lg border border-amber-500/20">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-xs font-medium text-gray-400">BNB (BNB)</p>
+                            <span class="text-xs px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded">Crypto</span>
+                        </div>
+                        @if($currentPrices['bnb']['success'] ?? false)
+                            <p class="text-2xl font-bold text-amber-400">
+                                $ {{ number_format($currentPrices['bnb']['price_usd'], 2, '.', ',') }}
+                            </p>
+                            @php $bnbChange = $currentPrices['bnb']['change_24h'] ?? 0; @endphp
+                            <p class="text-xs mt-1 {{ $bnbChange >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                                {{ $bnbChange >= 0 ? '+' : '' }}{{ number_format(abs($bnbChange), 2) }}% (24 jam)
+                            </p>
+                        @else
+                            <p class="text-sm text-red-400">Data tidak tersedia</p>
+                        @endif
+                    </div>
+
+                    {{-- Cardano --}}
+                    <div class="bg-gradient-to-br from-sky-500/10 to-sky-500/20 p-4 rounded-lg border border-sky-500/20">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-xs font-medium text-gray-400">Cardano (ADA)</p>
+                            <span class="text-xs px-2 py-0.5 bg-sky-500/20 text-sky-400 rounded">Crypto</span>
+                        </div>
+                        @if($currentPrices['cardano']['success'] ?? false)
+                            <p class="text-2xl font-bold text-sky-400">
+                                $ {{ number_format($currentPrices['cardano']['price_usd'], 2, '.', ',') }}
+                            </p>
+                            @php $adaChange = $currentPrices['cardano']['change_24h'] ?? 0; @endphp
+                            <p class="text-xs mt-1 {{ $adaChange >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                                {{ $adaChange >= 0 ? '+' : '' }}{{ number_format(abs($adaChange), 2) }}% (24 jam)
+                            </p>
+                        @else
+                            <p class="text-sm text-red-400">Data tidak tersedia</p>
+                        @endif
+                    </div>
+
+                    {{-- Saham IHSG --}}
+                    <div class="bg-gradient-to-br from-blue-500/10 to-blue-500/20 p-4 rounded-lg border border-blue-500/20">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-xs font-medium text-gray-400">IHSG (^JKSE)</p>
+                            <span class="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded">Stock</span>
                         </div>
                         @if($currentPrices['stock']['success'] ?? false)
-                            <p class="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                            <p class="text-2xl font-bold text-blue-400">
                                 Rp {{ number_format($currentPrices['stock']['price'], 0, ',', '.') }}
                             </p>
                             @php $stockChange = $currentPrices['stock']['change_percent'] ?? 0; @endphp
-                            <p class="text-xs mt-1 {{ $stockChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                            <p class="text-xs mt-1 {{ $stockChange >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
                                 {{ $stockChange >= 0 ? '▲' : '▼' }} {{ number_format(abs($stockChange), 2) }}%
                             </p>
                         @else
-                            <p class="text-sm text-red-500">Data tidak tersedia</p>
+                            <p class="text-sm text-red-400">Data tidak tersedia</p>
                         @endif
                     </div>
 
                     {{-- Emas --}}
-                    <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    <div class="bg-gradient-to-br from-yellow-500/10 to-yellow-500/20 p-4 rounded-lg border border-yellow-500/20">
                         <div class="flex items-center justify-between mb-2">
-                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400">Emas (XAU/USD)</p>
-                            <span class="text-xs px-2 py-0.5 bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded">Commodity</span>
+                            <p class="text-xs font-medium text-gray-400">Emas (XAU/USD)</p>
+                            <span class="text-xs px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">Commodity</span>
                         </div>
                         @if($currentPrices['gold']['success'] ?? false)
-                            <p class="text-2xl font-bold text-yellow-700 dark:text-yellow-300">
+                            <p class="text-2xl font-bold text-yellow-400">
                                 $ {{ number_format($currentPrices['gold']['price_usd'], 2, '.', ',') }}
                             </p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">per troy ounce</p>
+                            <p class="text-xs text-gray-400 mt-1">per troy ounce</p>
                         @else
-                            <p class="text-sm text-red-500">Data tidak tersedia</p>
+                            <p class="text-sm text-red-400">Data tidak tersedia</p>
                         @endif
                     </div>
                 </div>
@@ -82,19 +158,19 @@
             {{-- ============================================================ --}}
             {{-- Filter Periode Historis --}}
             {{-- ============================================================ --}}
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+            <div class="rounded-2xl p-6 bg-white/[0.03] backdrop-blur-xl border border-white/10">
                 <div class="flex flex-wrap items-center gap-3">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Periode Historis:</span>
-                    <button onclick="loadHistory(7)" class="periode-btn px-4 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white" data-days="7">
+                    <span class="text-sm font-medium text-gray-300">Periode Historis:</span>
+                    <button onclick="loadHistory(7)" class="periode-btn px-4 py-2 rounded-lg text-sm font-medium transition bg-gradient-to-r from-cyan-600 to-blue-600 text-white" data-days="7">
                         7 Hari
                     </button>
-                    <button onclick="loadHistory(14)" class="periode-btn px-4 py-2 rounded-lg text-sm font-medium transition bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300" data-days="14">
+                    <button onclick="loadHistory(14)" class="periode-btn px-4 py-2 rounded-lg text-sm font-medium transition bg-white/[0.05] border border-white/10 text-gray-300" data-days="14">
                         14 Hari
                     </button>
-                    <button onclick="loadHistory(30)" class="periode-btn px-4 py-2 rounded-lg text-sm font-medium transition bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300" data-days="30">
+                    <button onclick="loadHistory(30)" class="periode-btn px-4 py-2 rounded-lg text-sm font-medium transition bg-white/[0.05] border border-white/10 text-gray-300" data-days="30">
                         30 Hari
                     </button>
-                    <span id="loadingIndicator" class="hidden text-sm text-gray-500 dark:text-gray-400 ml-2">
+                    <span id="loadingIndicator" class="hidden text-sm text-gray-400 ml-2">
                         ⏳ Memuat data...
                     </span>
                 </div>
@@ -103,25 +179,25 @@
             {{-- ============================================================ --}}
             {{-- Chart: Bitcoin --}}
             {{-- ============================================================ --}}
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+            <div class="rounded-2xl p-6 bg-white/[0.03] backdrop-blur-xl border border-white/10">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200">
+                    <h3 class="text-md font-semibold text-white">
                         📈 Bitcoin (BTC) - Harga Historis
                     </h3>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">USD</span>
+                    <span class="text-xs text-gray-400">USD</span>
                 </div>
                 <div id="chart-btc" class="w-full h-80"></div>
             </div>
 
             {{-- ============================================================ --}}
-            {{-- Chart: Saham BBCA --}}
+            {{-- Chart: Saham IHSG --}}
             {{-- ============================================================ --}}
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+            <div class="rounded-2xl p-6 bg-white/[0.03] backdrop-blur-xl border border-white/10">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200">
-                        📈 Saham BBCA - Harga Historis
+                    <h3 class="text-md font-semibold text-white">
+                        📈 IHSG (^JKSE) - Harga Historis
                     </h3>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">IDR</span>
+                    <span class="text-xs text-gray-400">IDR</span>
                 </div>
                 <div id="chart-stock" class="w-full h-80"></div>
             </div>
@@ -129,12 +205,12 @@
             {{-- ============================================================ --}}
             {{-- Chart: Emas --}}
             {{-- ============================================================ --}}
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+            <div class="rounded-2xl p-6 bg-white/[0.03] backdrop-blur-xl border border-white/10">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200">
+                    <h3 class="text-md font-semibold text-white">
                         📈 Emas (XAU/USD) - Harga Historis
                     </h3>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">USD / troy ounce</span>
+                    <span class="text-xs text-gray-400">USD / troy ounce</span>
                 </div>
                 <div id="chart-gold" class="w-full h-80"></div>
             </div>
@@ -144,7 +220,7 @@
             {{-- ============================================================ --}}
             <div>
                 <a href="{{ route('dashboard') }}"
-                   class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-200 uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-600 transition">
+                   class="inline-flex items-center px-4 py-2 bg-white/5 border border-white/10 text-gray-300 rounded-xl text-xs uppercase tracking-widest hover:bg-cyan-500/10 hover:border-cyan-400/40 transition">
                     {{ __('← Kembali ke Dasbor') }}
                 </a>
             </div>
@@ -168,24 +244,14 @@
         };
 
         // =========================================================
-        // Deteksi dark mode
-        // =========================================================
-        function isDarkMode() {
-            return document.documentElement.classList.contains('dark')
-                || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-                    && !document.documentElement.classList.contains('light'));
-        }
-
-        // =========================================================
-        // Warna tema (Tailwind palette)
+        // Warna tema (Tailwind palette) - selalu dark
         // =========================================================
         function getThemeColors() {
-            const dark = isDarkMode();
             return {
-                text:        dark ? '#e5e7eb' : '#374151', // gray-200 : gray-700
-                grid:        dark ? '#374151' : '#e5e7eb', // gray-700 : gray-200
-                tooltipBg:   dark ? '#1f2937' : '#ffffff', // gray-800 : white
-                tooltipText: dark ? '#f9fafb' : '#111827', // gray-50 : gray-900
+                text:        '#e5e7eb', // gray-200
+                grid:        '#374151', // gray-700
+                tooltipBg:   '#1f2937', // gray-800
+                tooltipText: '#f9fafb', // gray-50
                 btc:   '#f97316', // orange-500
                 stock: '#3b82f6', // blue-500
                 gold:  '#eab308', // yellow-500
@@ -255,7 +321,7 @@
                     strokeDashArray: 4,
                 },
                 tooltip: {
-                    theme: isDarkMode() ? 'dark' : 'light',
+                    theme: 'dark',
                     style: {
                         fontSize: '12px',
                     },
@@ -303,7 +369,7 @@
             // Saham
             chartStock = new ApexCharts(
                 document.querySelector('#chart-stock'),
-                buildChartOptions('chart-stock', 'BBCA (IDR)', data.stock || [], c.stock, true)
+                buildChartOptions('chart-stock', 'IHSG (IDR)', data.stock || [], c.stock, true)
             );
             chartStock.render();
 
@@ -322,12 +388,14 @@
             // Update UI tombol
             document.querySelectorAll('.periode-btn').forEach(btn => {
                 const active = btn.dataset.days == days;
-                btn.classList.toggle('bg-indigo-600', active);
+                btn.classList.toggle('bg-gradient-to-r', active);
+                btn.classList.toggle('from-cyan-600', active);
+                btn.classList.toggle('to-blue-600', active);
                 btn.classList.toggle('text-white', active);
-                btn.classList.toggle('bg-gray-100', !active);
-                btn.classList.toggle('dark:bg-gray-700', !active);
-                btn.classList.toggle('text-gray-700', !active);
-                btn.classList.toggle('dark:text-gray-300', !active);
+                btn.classList.toggle('shadow-[0_0_15px_rgba(6,182,212,0.5)]', active);
+                btn.classList.toggle('bg-white/[0.05]', !active);
+                btn.classList.toggle('border-white/10', !active);
+                btn.classList.toggle('text-gray-300', !active);
             });
 
             // Tampilkan loading
@@ -338,7 +406,7 @@
                 // Fetch parallel
                 const [btcRes, stockRes, goldRes] = await Promise.all([
                     fetch(`/api/market/history?asset=btc&days=${days}`, { headers: { 'Accept': 'application/json' } }),
-                    fetch(`/api/market/history?asset=stock&days=${days}`, { headers: { 'Accept': 'application/json' } }),
+                    fetch(`/api/market/history?asset=stock&days=${days}`, { headers { 'Accept': 'application/json' } }),
                     fetch(`/api/market/history?asset=gold&days=${days}`, { headers: { 'Accept': 'application/json' } }),
                 ]);
 
@@ -355,7 +423,7 @@
 
                 chartStock.updateOptions({
                     xaxis: { categories: (stockData.prices || []).map(p => p.date) },
-                    series: [{ name: 'BBCA (IDR)', data: (stockData.prices || []).map(p => parseFloat(p.price)) }],
+                    series: [{ name: 'IHSG (IDR)', data: (stockData.prices || []).map(p => parseFloat(p.price)) }],
                 });
 
                 chartGold.updateOptions({
@@ -371,29 +439,10 @@
         }
 
         // =========================================================
-        // Deteksi perubahan dark mode → re-render chart
-        // =========================================================
-        const observer = new MutationObserver(() => {
-            const c = getThemeColors();
-            [chartBtc, chartStock, chartGold].forEach(chart => {
-                if (!chart) return;
-                chart.updateOptions({
-                    chart: { foreColor: c.text },
-                    xaxis: { labels: { style: { colors: c.text } }, axisBorder: { color: c.grid } },
-                    yaxis: { labels: { style: { colors: c.text } } },
-                    grid: { borderColor: c.grid },
-                    tooltip: { theme: isDarkMode() ? 'dark' : 'light' },
-                });
-            });
-        });
-
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-        // =========================================================
         // Boot: render chart saat halaman siap
         // =========================================================
         document.addEventListener('DOMContentLoaded', () => {
             initCharts(initialData);
         });
     </script>
-</x-app-layout> 
+</x-app-layout>

@@ -65,4 +65,30 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Market Detail: Crypto
+Route::get('/market/crypto', [EdukasiController::class, 'cryptoDetail'])->middleware('auth')->name('edukasi.crypto');
+
+// Market Detail: Forex
+Route::get('/market/forex', [EdukasiController::class, 'forexDetail'])->middleware('auth')->name('edukasi.forex');
+
+// Market Detail: Saham US
+Route::get('/market/saham-us', [EdukasiController::class, 'sahamUsDetail'])
+    ->middleware('auth')
+    ->name('edukasi.saham-us');
+
+// Market Detail: Komoditas
+Route::get('/market/commodity', [EdukasiController::class, 'commodityDetail'])
+    ->middleware('auth')
+    ->name('edukasi.commodity');
+
+// Asset Detail: Halaman detail per aset (crypto, stock, forex, commodity, index)
+Route::get('/market/asset/{type}/{symbol}', [EdukasiController::class, 'assetDetail'])
+    ->middleware('auth')
+    ->name('edukasi.asset.detail');
+
+// Portfolio
+Route::get('/portfolio', [EdukasiController::class, 'portfolio'])->middleware('auth')->name('portfolio');
+Route::post('/portfolio/add', [EdukasiController::class, 'storePortfolio'])->middleware('auth')->name('portfolio.store');
+Route::delete('/portfolio/{holding}', [EdukasiController::class, 'destroyPortfolio'])->middleware('auth')->name('portfolio.destroy');
+
 require __DIR__.'/auth.php';

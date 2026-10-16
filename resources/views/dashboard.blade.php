@@ -15,44 +15,13 @@
         <div class="relative max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             {{-- ============================================================ --}}
-            {{-- HEADER SAPAAN + BADGE PROFIL --}}
+            {{-- HEADER SAPAAN --}}
             {{-- ============================================================ --}}
-            <div class="fade-in-up flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                    <p class="text-sm text-cyan-300/80 tracking-wide">Selamat siang,</p>
-                    <h1 class="text-3xl md:text-5xl font-extrabold mt-1 tracking-tight gradient-text">
-                        {{ $user->name }}
-                    </h1>
-                </div>
-
-                @php
-                    $badgeStyle = match($profilRisiko) {
-                        'Konservatif' => 'bg-emerald-500/10 border-emerald-400/50 text-emerald-300 shadow-[0_0_25px_rgba(16,185,129,0.5)]',
-                        'Moderat'     => 'bg-yellow-500/10 border-yellow-400/50 text-yellow-300 shadow-[0_0_25px_rgba(234,179,8,0.5)]',
-                        'Agresif'     => 'bg-orange-500/10 border-orange-400/50 text-orange-300 shadow-[0_0_25px_rgba(249,115,22,0.5)]',
-                        default       => 'bg-gray-500/10 border-gray-400/50 text-gray-300',
-                    };
-                    $iconFire = match($profilRisiko) {
-                        'Agresif' => '🔥',
-                        'Moderat' => '⚡',
-                        default   => '🛡️',
-                    };
-                @endphp
-
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-2 px-4 py-2 rounded-full border {{ $badgeStyle }}">
-                        <span class="text-sm">{{ $iconFire }}</span>
-                        <span class="text-xs font-semibold tracking-wider uppercase">
-                            Profil: {{ $profilRisiko }}
-                        </span>
-                    </div>
-
-                    <button class="w-10 h-10 rounded-full bg-white/5 border border-white/10
-                                   flex items-center justify-center text-gray-400
-                                   hover:bg-cyan-500/10 hover:border-cyan-400/40 hover:text-cyan-300 transition">
-                        🔔
-                    </button>
-                </div>
+            <div class="fade-in-up">
+                <p class="text-sm text-cyan-300/80 tracking-wide">Ringkasan Pasar Hari Ini</p>
+                <h1 class="text-3xl md:text-4xl font-extrabold mt-1 tracking-tight text-white">
+                    Market Overview
+                </h1>
             </div>
 
             {{-- ============================================================ --}}
@@ -79,7 +48,7 @@
                                     AI Financial Advisor
                                 </h3>
                                 <p class="text-xs text-cyan-300/80">
-                                    Dianalisis oleh <span class="font-semibold text-cyan-300">Gemini 1.5 Flash</span>
+                                    Dianalisis oleh <span class="font-semibold text-cyan-300">Gemini 3.5 Flash Lite</span>
                                 </p>
                             </div>
                         </div>
@@ -115,8 +84,9 @@
 
                     {{-- Kartu Bitcoin --}}
                     <button type="button"
-                            data-asset="btc"
-                            onclick="switchChart('btc')"
+                            data-type="crypto"
+                            data-symbol="btc"
+                            onclick="window.location.href = '{{ route('edukasi.asset.detail', ['type' => 'crypto', 'symbol' => 'btc']) }}'"
                             class="asset-card group text-left relative overflow-hidden rounded-2xl p-5
                                    bg-white/[0.03] backdrop-blur-xl border border-white/10
                                    transition-all duration-300
@@ -160,8 +130,9 @@
 
                     {{-- Kartu IHSG --}}
                     <button type="button"
-                            data-asset="stock"
-                            onclick="switchChart('stock')"
+                            data-type="index"
+                            data-symbol="jkse"
+                            onclick="window.location.href = '{{ route('edukasi.asset.detail', ['type' => 'index', 'symbol' => 'jkse']) }}'"
                             class="asset-card group text-left relative overflow-hidden rounded-2xl p-5
                                    bg-white/[0.03] backdrop-blur-xl border border-white/10
                                    transition-all duration-300
@@ -205,8 +176,9 @@
 
                     {{-- Kartu Emas --}}
                     <button type="button"
-                            data-asset="gold"
-                            onclick="switchChart('gold')"
+                            data-type="commodity"
+                            data-symbol="gold"
+                            onclick="window.location.href = '{{ route('edukasi.asset.detail', ['type' => 'commodity', 'symbol' => 'gold']) }}'"
                             class="asset-card group text-left relative overflow-hidden rounded-2xl p-5
                                    bg-white/[0.03] backdrop-blur-xl border border-white/10
                                    transition-all duration-300
@@ -248,6 +220,7 @@
                     </button>
                 </div>
             </div>
+
 
             {{-- ============================================================ --}}
             {{-- CHART DINAMIS --}}
@@ -435,7 +408,51 @@
                 change: {{ $marketPrices['bitcoin']['change_24h'] ?? 0 }},
                 isCurrencyIDR: false,
             },
-            stock: {
+            eth: {
+            label: 'Pergerakan Ethereum',
+            symbol: 'ETH',
+            color: '#8b5cf6',
+            gradientTo: '#6366f1',
+            prices: @json($ethHistory['prices'] ?? []),
+            key: 'price_usd',
+            prefix: '$',
+            change: {{ $marketPrices['ethereum']['change_24h'] ?? 0 }},
+            isCurrencyIDR: false,
+        },
+        sol: {
+            label: 'Pergerakan Solana',
+            symbol: 'SOL',
+            color: '#ec4899',
+            gradientTo: '#f43f5e',
+            prices: @json($solHistory['prices'] ?? []),
+            key: 'price_usd',
+            prefix: '$',
+            change: {{ $marketPrices['solana']['change_24h'] ?? 0 }},
+            isCurrencyIDR: false,
+        },
+        bnb: {
+            label: 'Pergerakan BNB',
+            symbol: 'BNB',
+            color: '#f59e0b',
+            gradientTo: '#facc15',
+            prices: @json($bnbHistory['prices'] ?? []),
+            key: 'price_usd',
+            prefix: '$',
+            change: {{ $marketPrices['bnb']['change_24h'] ?? 0 }},
+            isCurrencyIDR: false,
+        },
+        ada: {
+            label: 'Pergerakan Cardano',
+            symbol: 'ADA',
+            color: '#0ea5e9',
+            gradientTo: '#38bdf8',
+            prices: @json($adaHistory['prices'] ?? []),
+            key: 'price_usd',
+            prefix: '$',
+            change: {{ $marketPrices['cardano']['change_24h'] ?? 0 }},
+            isCurrencyIDR: false,
+        },
+        stock: {
                 label: 'Pergerakan IHSG',
                 symbol: '^JKSE',
                 color: '#a855f7',
@@ -601,17 +618,25 @@
             });
 
             try {
-                const [btcRes, stockRes, goldRes] = await Promise.all([
+                const [btcRes, ethRes, solRes, bnbRes, adaRes, stockRes, goldRes] = await Promise.all([
                     fetch(`/api/market/history?asset=btc&days=${days}`, { headers: { 'Accept': 'application/json' } }),
+                    fetch(`/api/market/history?asset=eth&days=${days}`, { headers: { 'Accept': 'application/json' } }),
+                    fetch(`/api/market/history?asset=sol&days=${days}`, { headers: { 'Accept': 'application/json' } }),
+                    fetch(`/api/market/history?asset=bnb&days=${days}`, { headers: { 'Accept': 'application/json' } }),
+                    fetch(`/api/market/history?asset=ada&days=${days}`, { headers: { 'Accept': 'application/json' } }),
                     fetch(`/api/market/history?asset=stock&days=${days}`, { headers: { 'Accept': 'application/json' } }),
                     fetch(`/api/market/history?asset=gold&days=${days}`, { headers: { 'Accept': 'application/json' } }),
                 ]);
 
-                const [btcData, stockData, goldData] = await Promise.all([
-                    btcRes.json(), stockRes.json(), goldRes.json()
+                const [btcData, ethData, solData, bnbData, adaData, stockData, goldData] = await Promise.all([
+                    btcRes.json(), ethRes.json(), solRes.json(), bnbRes.json(), adaRes.json(), stockRes.json(), goldRes.json()
                 ]);
 
                 if (btcData.prices)   chartData.btc.prices   = btcData.prices;
+                if (ethData.prices)   chartData.eth.prices   = ethData.prices;
+                if (solData.prices)   chartData.sol.prices   = solData.prices;
+                if (bnbData.prices)   chartData.bnb.prices   = bnbData.prices;
+                if (adaData.prices)   chartData.ada.prices   = adaData.prices;
                 if (stockData.prices) chartData.stock.prices = stockData.prices;
                 if (goldData.prices)  chartData.gold.prices  = goldData.prices;
 

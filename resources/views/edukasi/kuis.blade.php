@@ -1,71 +1,71 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-white leading-tight">
             {{ __('Kuis Profil Risiko') }}
         </h2>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="relative min-h-screen py-8 overflow-hidden">
+        <div class="relative max-w-2xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             {{-- Notifikasi sukses --}}
             @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                <div class="px-4 py-3 rounded-lg bg-emerald-500/10 border border-emerald-400/20 text-emerald-300">
                     {{ session('success') }}
                 </div>
             @endif
 
             {{-- Info cara pengisian --}}
-            <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
-                <p class="text-sm text-blue-800 dark:text-blue-200">
+            <div class="rounded-lg p-4 bg-cyan-500/10 border border-cyan-400/30">
+                <p class="text-sm text-cyan-300">
                     <strong>Petunjuk:</strong> Isi nama dan NIM Anda, lalu masukkan total skor kuis (0-15)
                     sesuai hasil perhitungan dari pertanyaan-pertanyaan yang telah Anda jawab.
                 </p>
             </div>
 
             {{-- Form Kuis --}}
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+            <div class="rounded-2xl p-6 bg-white/[0.03] backdrop-blur-xl border border-white/10">
                 <form action="{{ route('edukasi.kuis.simpan') }}" method="POST">
                     @csrf
 
                     {{-- Nama --}}
                     <div class="mb-4">
                         <label for="nama"
-                               class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                               class="block mb-2 text-sm font-medium text-gray-300">
                             Nama Lengkap
                         </label>
                         <input type="text"
                                id="nama"
                                name="nama"
                                value="{{ old('nama', Auth::user()->name ?? '') }}"
-                               class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                               class="w-full bg-white/[0.05] border border-white/10 text-white rounded-lg px-4 py-2 focus:border-cyan-400/40 focus:ring-1 focus:ring-cyan-400/40"
                                required>
                         @error('nama')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     {{-- NIM --}}
                     <div class="mb-4">
                         <label for="nim"
-                               class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                               class="block mb-2 text-sm font-medium text-gray-300">
                             NIM
                         </label>
                         <input type="text"
                                id="nim"
                                name="nim"
                                value="{{ old('nim', Auth::user()->nim ?? '') }}"
-                               class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                               class="w-full bg-white/[0.05] border border-white/10 text-white rounded-lg px-4 py-2 focus:border-cyan-400/40 focus:ring-1 focus:ring-cyan-400/40"
                                required>
                         @error('nim')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     {{-- Skor --}}
                     <div class="mb-4">
                         <label for="skor"
-                               class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                               class="block mb-2 text-sm font-medium text-gray-300">
                             Total Skor Kuis (0 - 15)
                         </label>
                         <input type="number"
@@ -74,36 +74,38 @@
                                min="0"
                                max="15"
                                value="{{ old('skor') }}"
-                               class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                               class="w-full bg-white/[0.05] border border-white/10 text-white rounded-lg px-4 py-2 focus:border-cyan-400/40 focus:ring-1 focus:ring-cyan-400/40"
                                required>
                         @error('skor')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-400 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     {{-- Keterangan Kategori --}}
-                    <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-3 mb-6 text-xs text-gray-600 dark:text-gray-300">
-                        <p class="font-semibold mb-1">Kategori Profil Risiko:</p>
+                    <div class="rounded-md p-3 mb-6 bg-white/[0.02] border border-white/5 text-xs text-gray-400">
+                        <p class="font-semibold mb-1 text-white">Kategori Profil Risiko:</p>
                         <ul class="list-disc list-inside space-y-1">
-                            <li><span class="font-medium text-green-600 dark:text-green-400">0 - 5</span> → Konservatif</li>
-                            <li><span class="font-medium text-yellow-600 dark:text-yellow-400">6 - 10</span> → Moderat</li>
-                            <li><span class="font-medium text-red-600 dark:text-red-400">11 - 15</span> → Agresif</li>
+                            <li><span class="font-medium text-emerald-400">0 - 5</span> → Konservatif</li>
+                            <li><span class="font-medium text-yellow-400">6 - 10</span> → Moderat</li>
+                            <li><span class="font-medium text-red-400">11 - 15</span> → Agresif</li>
                         </ul>
                     </div>
 
                     {{-- Tombol Aksi --}}
                     <div class="flex items-center gap-3">
-                        <x-primary-button>
+                        <button type="submit"
+                                class="bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-cyan-500 hover:to-blue-500 transition shadow-[0_0_25px_rgba(6,182,212,0.5)]">
                             {{ __('Simpan Hasil') }}
-                        </x-primary-button>
+                        </button>
 
                         <a href="{{ route('dashboard') }}"
-                           class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-200 uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-600 transition">
+                           class="inline-flex items-center px-4 py-2 bg-white/5 border border-white/10 text-gray-300 rounded-xl text-xs uppercase tracking-widest hover:bg-cyan-500/10 hover:border-cyan-400/40 transition">
                             {{ __('Kembali') }}
                         </a>
                     </div>
                 </form>
             </div>
+
         </div>
     </div>
 </x-app-layout>

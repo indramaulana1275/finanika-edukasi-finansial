@@ -47,4 +47,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the portfolio holdings for the user.
+     */
+    public function portfolioHoldings()
+    {
+        return $this->hasMany(PortfolioHolding::class, 'id_user');
+    }
 }

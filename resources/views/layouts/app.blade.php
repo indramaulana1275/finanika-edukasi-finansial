@@ -240,7 +240,12 @@
                             ['route' => 'dashboard',          'label' => 'Dasbor',         'icon' => 'grid'],
                             ['route' => 'edukasi.kuis',       'label' => 'Kuis Risiko',    'icon' => 'clipboard'],
                             ['route' => 'edukasi.kalkulator', 'label' => 'Kalkulator DCA', 'icon' => 'calculator'],
-                            ['route' => 'edukasi.market',     'label' => 'Market Data',    'icon' => 'chart'],
+                            ['route' => 'edukasi.market',     'label' => 'Semua Pasar',   'icon' => 'chart'],
+                        ['route' => 'edukasi.crypto',     'label' => 'Crypto',         'icon' => 'coin'],
+                        ['route' => 'edukasi.forex',      'label' => 'Kurs',           'icon' => 'currency'],
+                        ['route' => 'edukasi.saham-us',   'label' => 'Saham US',      'icon' => 'building'],
+                        ['route' => 'edukasi.commodity', 'label' => 'Komoditas',    'icon' => 'package'],
+                        ['route' => 'portfolio',         'label' => 'Portfolio',    'icon' => 'wallet'],
                         ];
                     @endphp
 
@@ -282,6 +287,36 @@
                                     @case('chart')
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 4 4 5-6M4 20h16"/>
+                                        </svg>
+                                        @break
+                                    @case('coin')
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                            <circle cx="12" cy="12" r="8"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 9l6 6M9 15l6-6" opacity="0"/>
+                                            <text x="12" y="16" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">$</text>
+                                        </svg>
+                                        @break
+                                    @case('currency')
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 10h6a3 3 0 0 1 0 6H9"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 14h6a3 3 0 0 1 0 6H9"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H8"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 9l-3 3 3 3"/>
+                                        </svg>
+                                        @break
+                                    @case('building')
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                        </svg>
+                                        @break
+                                    @case('package')
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        @break
+                                    @case('wallet')
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 10v7a2 2 0 002 2h14a2 2 0 002-2v-7M3 10l11-5h-4l-11 5z"/>
                                         </svg>
                                         @break
                                 @endswitch
