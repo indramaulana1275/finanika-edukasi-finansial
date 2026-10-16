@@ -13,5 +13,6 @@ class RiskProfile extends Model
         'nama',
         'nim',
         'tipe_risiko',
+        'level',
     ];
 }

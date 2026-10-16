@@ -98,17 +98,107 @@ class EdukasiController extends Controller
 
     /**
      * ============================================================
-     * Halaman Kuis Risiko
+     * Halaman Kuis Risiko (Interaktif 10 Soal, 5 Level)
      * ============================================================
      */
-    public function kuisRisiko()
+    public function kuisRisiko(Request $request)
     {
-        return view('edukasi.kuis');
+        $user = Auth::user();
+        $existing = null;
+
+        if ($user && $user->nim) {
+            $existing = RiskProfile::where('nim', $user->nim)->first();
+        }
+
+        $soal = [
+            [
+                'question' => 'Kalau kamu punya uang Rp1 juta, apa yang kamu lakukan?',
+                'options' => [
+                    ['text' => 'Simpan di tabungan', 'score' => 0],
+                    ['text' => 'Beli reksadana atau emas', 'score' => 1],
+                    ['text' => 'Beli saham atau kripto', 'score' => 2],
+                ],
+            ],
+            [
+                'question' => 'Kalau investasimu turun 20% dalam 1 bulan, apa reaksimu?',
+                'options' => [
+                    ['text' => 'Panik dan jual semua', 'score' => 0],
+                    ['text' => 'Tunggu dan evaluasi', 'score' => 1],
+                    ['text' => 'Beli lebih banyak (turun = diskon)', 'score' => 2],
+                ],
+            ],
+            [
+                'question' => 'Berapa lama horizon investasimu?',
+                'options' => [
+                    ['text' => 'Kurang dari 1 tahun', 'score' => 0],
+                    ['text' => '1-5 tahun', 'score' => 1],
+                    ['text' => 'Lebih dari 5 tahun', 'score' => 2],
+                ],
+            ],
+            [
+                'question' => 'Seberapa sering kamu memantau harga investasi?',
+                'options' => [
+                    ['text' => 'Setiap jam / tiap hari', 'score' => 0],
+                    ['text' => 'Beberapa kali seminggu', 'score' => 1],
+                    ['text' => 'Tidak terlalu sering, fokus jangka panjang', 'score' => 2],
+                ],
+            ],
+            [
+                'question' => 'Apa tujuan utama investasimu?',
+                'options' => [
+                    ['text' => 'Aman dan tidak rugi', 'score' => 0],
+                    ['text' => 'Pertumbuhan sedang, aman relatif', 'score' => 1],
+                    ['text' => 'Keuntungan maksimal, siap risiko tinggi', 'score' => 2],
+                ],
+            ],
+            [
+                'question' => 'Pengalaman investasi kamu sejauh ini?',
+                'options' => [
+                    ['text' => 'Belum pernah investasi', 'score' => 0],
+                    ['text' => 'Pernah tabungan/reksadana', 'score' => 1],
+                    ['text' => 'Pernah saham/kripto/forex', 'score' => 2],
+                ],
+            ],
+            [
+                'question' => 'Jika ada peluang return 30% tapi risiko rugi 30%, apa yang kamu lakukan?',
+                'options' => [
+                    ['text' => 'Tidak mau, terlalu berisiko', 'score' => 0],
+                    ['text' => 'Pertimbangkan dengan sebagian dana', 'score' => 1],
+                    ['text' => 'Masuk dengan semua dana', 'score' => 2],
+                ],
+            ],
+            [
+                'question' => 'Bagaimana perasaanmu saat pasar berfluktuasi?',
+                'options' => [
+                    ['text' => 'Gondok dan tidak nyaman', 'score' => 0],
+                    ['text' => 'Agak cemas tapi bisa ditangani', 'score' => 1],
+                    ['text' => 'Nyaman, ini bagian dari proses', 'score' => 2],
+                ],
+            ],
+            [
+                'question' => 'Berapa persen penghasilan bulanan untuk investasi?',
+                'options' => [
+                    ['text' => 'Kurang dari 5%', 'score' => 0],
+                    ['text' => '5-15%', 'score' => 1],
+                    ['text' => 'Di atas 15%', 'score' => 2],
+                ],
+            ],
+            [
+                'question' => 'Apakah kamu memiliki dana darurat 3-6 bulan biaya hidup?',
+                'options' => [
+                    ['text' => 'Belum ada', 'score' => 0],
+                    ['text' => 'Sedang menabung', 'score' => 1],
+                    ['text' => 'Sudah cukup', 'score' => 2],
+                ],
+            ],
+        ];
+
+        return view('edukasi.kuis', compact('existing', 'soal'));
     }
 
     /**
      * ============================================================
-     * Simpan hasil kuis
+     * Simpan hasil kuis interaktif (10 soal, 5 level)
      * ============================================================
      */
     public function simpanKuis(Request $request)
@@ -116,15 +206,32 @@ class EdukasiController extends Controller
         $request->validate([
             'nama' => 'required|string|max:100',
             'nim' => 'required|string|max:20',
-            'skor' => 'required|integer|min:0|max:15',
+            'answers' => 'required|array|size:10',
         ]);
 
-        if ($request->skor <= 5) {
+        $totalSkor = 0;
+        foreach ($request->answers as $jawaban) {
+            if (is_numeric($jawaban)) {
+                $totalSkor += (int) $jawaban;
+            }
+        }
+
+        // Tentukan level dan tipe risiko (5 level, skor max 20)
+        if ($totalSkor <= 4) {
+            $level = 1;
+            $tipe = 'Sangat Konservatif';
+        } elseif ($totalSkor <= 8) {
+            $level = 2;
             $tipe = 'Konservatif';
-        } elseif ($request->skor <= 10) {
+        } elseif ($totalSkor <= 12) {
+            $level = 3;
             $tipe = 'Moderat';
-        } else {
+        } elseif ($totalSkor <= 16) {
+            $level = 4;
             $tipe = 'Agresif';
+        } else {
+            $level = 5;
+            $tipe = 'Sangat Agresif';
         }
 
         RiskProfile::updateOrCreate(
@@ -132,11 +239,19 @@ class EdukasiController extends Controller
             [
                 'nama' => $request->nama,
                 'tipe_risiko' => $tipe,
+                'level' => $level,
             ]
         );
 
-        return redirect()->route('dashboard')
-            ->with('success', "Hasil kuis Anda: $tipe");
+        return redirect()->route('edukasi.kuis')
+            ->with('quiz_result', [
+                'nama' => $request->nama,
+                'nim' => $request->nim,
+                'skor' => $totalSkor,
+                'max_skor' => 20,
+                'level' => $level,
+                'tipe' => $tipe,
+            ]);
     }
 
     /**

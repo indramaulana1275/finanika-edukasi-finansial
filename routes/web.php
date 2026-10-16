@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\EdukasiController;
+use App\Http\Controllers\EducationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -90,5 +91,24 @@ Route::get('/market/asset/{type}/{symbol}', [EdukasiController::class, 'assetDet
 Route::get('/portfolio', [EdukasiController::class, 'portfolio'])->middleware('auth')->name('portfolio');
 Route::post('/portfolio/add', [EdukasiController::class, 'storePortfolio'])->middleware('auth')->name('portfolio.store');
 Route::delete('/portfolio/{holding}', [EdukasiController::class, 'destroyPortfolio'])->middleware('auth')->name('portfolio.destroy');
+
+// Chat FinGo AI
+Route::middleware('auth')->group(function () {
+    Route::get('/chat', [\App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
+    Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'send'])
+        ->middleware('throttle:15,1')
+        ->name('chat.send');
+    Route::delete('/chat/clear', [\App\Http\Controllers\ChatController::class, 'clear'])->name('chat.clear');
+});
+
+// =============================
+// Modul Edukasi Interaktif (FASE I)
+// =============================
+Route::middleware('auth')->group(function () {
+    Route::get('/education', [EducationController::class, 'index'])->name('education.index');
+    Route::get('/education/{slug}', [EducationController::class, 'show'])->name('education.show');
+    Route::post('/education/{slug}/submit', [EducationController::class, 'submitQuiz'])->name('education.submit');
+    Route::get('/education/certificate', [EducationController::class, 'certificate'])->name('education.certificate');
+});
 
 require __DIR__.'/auth.php';

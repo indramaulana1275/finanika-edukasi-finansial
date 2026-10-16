@@ -246,6 +246,8 @@
                         ['route' => 'edukasi.saham-us',   'label' => 'Saham US',      'icon' => 'building'],
                         ['route' => 'edukasi.commodity', 'label' => 'Komoditas',    'icon' => 'package'],
                         ['route' => 'portfolio',         'label' => 'Portfolio',    'icon' => 'wallet'],
+                        ['route' => 'chat.index',      'label' => 'Tanya AI',       'icon' => 'chat'],
+                        ['route' => 'education.index', 'label' => 'Belajar',        'icon' => 'book'],
                         ];
                     @endphp
 
@@ -317,6 +319,16 @@
                                     @case('wallet')
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 10v7a2 2 0 002 2h14a2 2 0 002-2v-7M3 10l11-5h-4l-11 5z"/>
+                                        </svg>
+                                        @break
+                                    @case('chat')
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        @break
+                                    @case('book')
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                         </svg>
                                         @break
                                 @endswitch

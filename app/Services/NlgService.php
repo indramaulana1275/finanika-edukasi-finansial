@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\EducationModule;
+use App\Models\UserModuleProgress;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -277,5 +279,238 @@ PROMPT;
         return 'Portofolio kamu sedang dikelola. Harga aset investasi bisa naik atau turun setiap hari. '
              .'Penting untuk tetap terdiversifikasi dan tidak menaruh semua telur dalam satu keranjang. '
              .'Terus konsisten dengan strategi investasi kamu dan fokus pada jangka panjang.';
+    }
+
+    /**
+     * Chat interaktif dengan FinGo AI (untuk halaman Chat).
+     *
+     * @param  array  $context  ['profil_risiko', 'market_prices', 'chat_history', 'user_name']
+     */
+    public function chatWithFinGo(string $userMessage, array $context): string
+    {
+        $profilRisiko = $context['profil_risiko'] ?? 'Moderat';
+        $marketPrices = $context['market_prices'] ?? [];
+        $forexPrices = $context['forex_prices'] ?? [];
+        $sahamUSPrices = $context['saham_us'] ?? [];
+        $commodityPrices = $context['commodities'] ?? [];
+        $chatHistory = $context['chat_history'] ?? [];
+        $moduleProgress = $context['module_progress'] ?? [
+            'completed' => 0,
+            'total' => 0,
+            'next_module' => null,
+        ];
+
+        // Bangun konteks progres modul untuk prompt AI
+        $moduleContext = "\nKONTEKS EDUKASI USER:\n";
+        $moduleContext .= "- Modul selesai: {$moduleProgress['completed']} dari {$moduleProgress['total']}\n";
+        $moduleContext .= '- Modul berikutnya disarankan: '.($moduleProgress['next_module'] ?? 'Semua modul telah terselesaikan')."\n";
+
+        // Bangun konteks pasar lengkap untuk prompt AI
+        $marketContext = "\n=== CRYPTO ===\n";
+        $crypto = $marketPrices;
+        $cryptoList = [
+            'bitcoin' => 'Bitcoin (BTC)',
+            'ethereum' => 'Ethereum (ETH)',
+            'solana' => 'Solana (SOL)',
+            'bnb' => 'BNB',
+            'cardano' => 'Cardano (ADA)',
+            'bitcoin-cash' => 'Bitcoin Cash (BCH)',
+            'litecoin' => 'Litecoin (LTC)',
+            'dogecoin' => 'Dogecoin (DOGE)',
+            'polkadot' => 'Polkadot (DOT)',
+            'chainlink' => 'Chainlink (LINK)',
+        ];
+        foreach ($cryptoList as $key => $label) {
+            if (! empty($crypto[$key]['success']) && ! empty($crypto[$key]['price_usd'])) {
+                $p = $crypto[$key]['price_usd'];
+                $c = $crypto[$key]['change_24h'] ?? 0;
+                $marketContext .= "- {$label}: $".number_format($p, 2).' ('.number_format($c, 2)."%)\n";
+            }
+        }
+
+        $marketContext .= "\n=== SAHAM INDONESIA ===\n";
+        if (! empty($crypto['stock']['success'])) {
+            $marketContext .= '- IHSG: Rp '.number_format($crypto['stock']['price'] ?? 0, 0, ',', '.').' ('.number_format($crypto['stock']['change_percent'] ?? 0, 2)."%)\n";
+        }
+
+        $marketContext .= "\n=== KOMODITAS ===\n";
+        $commodities = $commodityPrices;
+        $commodityList = [
+            'gold' => 'Emas (XAU)',
+            'silver' => 'Perak',
+            'crude-oil' => 'Minyak WTI',
+            'natural-gas' => 'Gas Alam',
+        ];
+        foreach ($commodityList as $key => $label) {
+            if (! empty($commodities[$key]['success'])) {
+                $price = $commodities[$key]['price_usd'] ?? $commodities[$key]['price'] ?? 0;
+                $marketContext .= "- {$label}: $".number_format($price, 2)."\n";
+            }
+        }
+
+        $marketContext .= "\n=== SAHAM US ===\n";
+        $sahamUS = $sahamUSPrices;
+        $sahamList = [
+            'nasdaq' => 'NASDAQ',
+            'sp500' => 'S&P 500',
+            'dowjones' => 'Dow Jones',
+            'russell2000' => 'Russell 2000',
+            'vix' => 'VIX',
+        ];
+        foreach ($sahamList as $key => $label) {
+            if (! empty($sahamUS[$key]['success']) && ! empty($sahamUS[$key]['price'])) {
+                $marketContext .= "- {$label}: $".number_format($sahamUS[$key]['price'], 2)."\n";
+            }
+        }
+
+        $marketContext .= "\n=== KURS ===\n";
+        $forex = $forexPrices;
+        $forexList = [
+            'usd' => 'USD/IDR',
+            'eur' => 'EUR/IDR',
+            'jpy' => 'JPY/IDR',
+            'cny' => 'CNY/IDR',
+            'gbp' => 'GBP/IDR',
+            'sgd' => 'SGD/IDR',
+        ];
+        foreach ($forexList as $key => $label) {
+            if (! empty($forex[$key]['success'])) {
+                $price = $forex[$key]['rate'] ?? $forex[$key]['price'] ?? 0;
+                $marketContext .= "- {$label}: Rp ".number_format($price, 0, ',', '.')."\n";
+            }
+        }
+
+        // Format history chat untuk prompt (maksimal 5 pertukaran terakhir)
+        $historyText = '';
+        if (! empty($chatHistory)) {
+            $historyText = "\nRIWAYAT PERCAKAPAN SEBELUMNYA:\n";
+            foreach ($chatHistory as $msg) {
+                $role = $msg['role'] === 'user' ? 'User' : 'FinGo';
+                $historyText .= "{$role}: {$msg['content']}\n";
+            }
+        }
+
+        $systemInstruction = <<<PROMPT
+Kamu adalah "FinGo", asisten finansial AI untuk mahasiswa Indonesia. Gaya bahasamu santai, akrab, mengajar — seperti kakak tingkat yang paham finansial.
+
+KONTEKS USER:
+- Profil risiko: {$profilRisiko}
+
+KONTEKS PASAR SAAT INI:
+{$marketContext}
+{$moduleContext}
+
+ATURAN WAJIB (JANGAN DILANGGAR):
+
+1. FOKUS KE PESAN TERAKHIR USER. Jawab pertanyaan terakhir, jangan jawab pertanyaan lama. Kalau user ganti topik, ikuti topik baru.
+
+2. WAJIB 100% BAHASA INDONESIA. JANGAN pakai istilah Inggris seperti 'bullish', 'bearish', 'FOMO', 'HODL', 'DYOR', 'moon', 'dump'. Kalau perlu istilah teknis, jelaskan dalam bahasa Indonesia.
+
+3. JAWAB PERTANYAAN USER LANGSUNG. Kalau user tanya harga aset, JAWAB harganya (dari KONTEKS PASAR di atas). Jangan balik tanya, jangan ceramah.
+
+4. JANGAN BERI TIPS/NASIHAT jika user TIDAK MINTA. Kalau user tanya "harga ETH?", cukup jawab harga ETH + 1 kalimat perubahan. Jangan tambah "tips diversifikasi" kecuali user minta.
+
+5. Kalau user tanya ANALISIS SKENARIO ("beli X sekarang, jual tahun Y, apakah untung?"), jawab: analisis kondisi + prinsip umum + saran diversifikasi + jangan janjikan untung pasti.
+
+6. Kalau user tanya REKOMENDASI, sesuaikan dengan profil risiko {$profilRisiko}. Konservatif = aset stabil, Moderat = campuran, Agresif = agresif.
+
+7. Jawab SINGKAT 2-3 paragraf pendek, substantif.
+
+8. Kalau user tanya di LUAR FINANSIAL (contoh: resep masakan, film, olahraga, dll), jawab sopan: "Aku khusus bahas finansial ya, teman. Ada yang bisa dibantu soal keuangan?" JANGAN jawab topik di luar finansial.
+
+9. JANGAN mengarang data. Kalau data aset yang ditanya TIDAK ADA di KONTEKS PASAR di atas, jawab: "Aku belum punya data {nama aset} saat ini. Coba cek platform terpercaya ya." JANGAN mengarang harga.
+
+10. Emoji maksimal 2 per respons.
+
+11. Kalau user tanya progres belajar ("apa progresku?", "berapa modul yang sudah selesai?"), jawab berdasarkan KONTEKS EDUKASI USER di atas.
+
+12. Kalau user tanya rekomendasi modul ("apa modul berikutnya?", "apa yang harus saya pelajari?"), rekomendasikan modul berikutnya dari KONTEKS EDUKASI USER dan dorong user untuk selesaikan.
+
+CONTOH JAWABAN YANG BENAR:
+
+User: "Apa progres belajar saya?"
+FinGo: "Kamu sudah menyelesaikan 3 dari 8 modul. Hebat! Teruskan semangat belajar finansial ya."
+
+User: "Apa modul berikutnya yang harus saya pelajari?"
+FinGo: "Modul berikutnya yang disarankan untuk kamu adalah 'Memahami Profil Risiko'. Yuk, selesaikan modul itu dulu biar lebih paham tipe investasi yang cocok denganmu."
+
+User: "Resep nasi goreng dong"
+FinGo: "Aku khusus bahas finansial ya, teman. Ada yang bisa dibantu soal keuangan?"
+
+User: "Harga Dogecoin?"
+FinGo: "Aku belum punya data Dogecoin saat ini. Yang ada di sistemku: BTC, ETH, SOL, BNB, ADA, XRP, AVAX, DOT, LINK, MATIC. Mau cek yang mana?"
+PROMPT;
+
+        $userPrompt = <<<PROMPT
+Pertanyaan saya: {$userMessage}
+{$historyText}
+
+Tolong balas sebagai FinGo sesuai aturan di atas.
+PROMPT;
+
+        return $this->callGemini($systemInstruction, $userPrompt);
+    }
+
+    /**
+     * Format data pasar untuk prompt chat.
+     */
+    protected function formatMarketForChat(array $marketPrices): string
+    {
+        $lines = [];
+        $assetNames = [
+            'bitcoin' => 'Bitcoin (BTC)',
+            'ethereum' => 'Ethereum (ETH)',
+            'stock' => 'IHSG (^JKSE)',
+            'gold' => 'Emas (XAU/USD)',
+        ];
+
+        foreach ($assetNames as $key => $label) {
+            $data = $marketPrices[$key] ?? null;
+            if (! $data || ! isset($data['success']) || ! $data['success']) {
+                $lines[] = "- {$label}: Data tidak tersedia";
+
+                continue;
+            }
+
+            $price = $data['price_usd'] ?? $data['price'] ?? $data['rate'] ?? 0;
+            $change = $data['change_24h'] ?? $data['change_percent'] ?? $data['change'] ?? 0;
+            $arrow = $change >= 0 ? '▲' : '▼';
+
+            if (isset($data['price_usd'])) {
+                $lines[] = sprintf('- %s: $%.2f (%s %.2f%% 24 jam)', $label, $price, $arrow, abs($change));
+            } else {
+                $lines[] = sprintf('- %s: Rp %s (%s %.2f%%)', $label, number_format($price, 0, ',', '.'), $arrow, abs($change));
+            }
+        }
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Rekomendasi modul edukasi berikutnya berdasarkan progress user.
+     */
+    public function getModuleRecommendation(int $userId): string
+    {
+        $totalModules = EducationModule::count();
+        $completed = UserModuleProgress::where('id_user', $userId)
+            ->where('completed', true)
+            ->count();
+
+        $nextModule = EducationModule::whereNotIn(
+            'id',
+            UserModuleProgress::where('id_user', $userId)
+                ->where('completed', true)
+                ->pluck('module_id')
+        )->orderBy('order_index')->first();
+
+        if ($completed >= $totalModules) {
+            return "Selamat! Kamu sudah menyelesaikan semua {$totalModules} modul edukasi. Ayo terima sertifikat digital di halaman Belajar.";
+        }
+
+        if (! $nextModule) {
+            return 'Semua modul telah terselesaikan. Hebat!';
+        }
+
+        return "Kamu telah menyelesaikan {$completed} dari {$totalModules} modul. Modul berikutnya yang disarankan: \"{$nextModule->title}\". Yuk, selesaikan untuk meningkatkan literasi keuanganmu!";
     }
 }
