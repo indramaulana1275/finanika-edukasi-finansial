@@ -7,15 +7,15 @@
 
     <div class="relative min-h-screen py-8 overflow-hidden"
          x-data="{
-            phase: @isset($quiz_result) ? 'result' : (@$existing ? 'result' : 'input'),
-            nama: @isset($existing) ? {{ json_encode($existing->nama) }} : (@isset(old('nama')) ? {{ json_encode(old('nama')) }} : ''),
-            nim: @isset($existing) ? {{ json_encode($existing->nim) }} : (@isset(old('nim')) ? {{ json_encode(old('nim')) }} : ''),
+            phase: {{ isset($quiz_result) ? "'result'" : (isset($existing) && $existing ? "'result'" : "'input'") }},
+            nama: {{ isset($existing) && $existing ? json_encode($existing->nama) : (old('nama') !== null ? json_encode(old('nama')) : "''") }},
+            nim: {{ isset($existing) && $existing ? json_encode($existing->nim) : (old('nim') !== null ? json_encode(old('nim')) : "''") }},
             currentQuestion: 0,
             answers: {},
-            skor: @isset($quiz_result) ? {{ $quiz_result['skor'] }} : 0,
+            skor: {{ isset($quiz_result) ? $quiz_result['skor'] : 0 }},
             maxSkor: 20,
-            level: @isset($quiz_result) ? {{ $quiz_result['level'] }} : 0,
-            tipe: @isset($quiz_result) ? {{ json_encode($quiz_result['tipe']) }} : '',
+            level: {{ isset($quiz_result) ? $quiz_result['level'] : 0 }},
+            tipe: {{ isset($quiz_result) ? json_encode($quiz_result['tipe']) : "''" }},
             soal: @json($soal ?? []),
 
             startQuiz() {

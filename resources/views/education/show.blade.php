@@ -49,7 +49,7 @@
                 </div>
 
                 <div class="prose prose-invert prose-sm md:prose-base max-w-none text-gray-300 leading-relaxed">
-                    {!! $module->content !!}
+                    {!! (new \League\CommonMark\CommonMarkConverter())->convert($module->content)->getContent() !!}
                 </div>
 
                 {{-- Divider --}}
@@ -141,7 +141,7 @@
                                   disabled:opacity-50 disabled:cursor-not-allowed
                                   hover:from-cyan-500 hover:to-blue-500 transition-all
                                   shadow-[0_0_20px_rgba(6,182,212,0.4)]">
-                        {{ $currentQuestion < questions.length - 1 ? 'Berikutnya' : 'Selesai & Lihat Nilai' }}
+                        <span x-text="currentQuestion < questions.length - 1 ? 'Berikutnya' : 'Selesai & Lihat Nilai'"></span>
                     </button>
                 </div>
             </form>
